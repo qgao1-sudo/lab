@@ -24,16 +24,16 @@ class ChemistryLab {
 
         // Chemical Reaction Rules
         this.reactionRules = {
-            'red+blue': { type: 'explosion', result: 0x8800ff, name: '💥 EXPLOSION!' },
-            'red+yellow': { type: 'bubbles', result: 0xff8800, name: '🫧 BUBBLING!' },
-            'blue+yellow': { type: 'freeze', result: 0x00ffff, name: '❄️ FROZEN!' },
-            'pink+yellow': { type: 'viscous', result: 0xffaa00, name: '🍯 VISCOUS!' },
-            'green+red': { type: 'jelly', result: 0x88ff44, name: '🍮 JELLY!' },
-            'green+blue': { type: 'bubbles', result: 0x0088ff, name: '🫧 BUBBLING!' },
-            'pink+blue': { type: 'none', result: 0xaa44aa, name: '⚪ NO REACTION' },
-            'pink+green': { type: 'glow', result: 0x88ff88, name: '✨ GLOWING!' },
-            'red+green': { type: 'viscous', result: 0x888800, name: '🍯 STICKY!' },
-            'yellow+green': { type: 'jelly', result: 0xaaff44, name: '🍮 SOLIDIFYING!' }
+            'red+blue': { type: 'explosion', result: 0x8800ff, name: '💥🎆 MASSIVE EXPLOSION! 🎆💥' },
+            'red+yellow': { type: 'bubbles', result: 0xff8800, name: '🫧✨ BUBBLING REACTION! ✨🫧' },
+            'blue+yellow': { type: 'freeze', result: 0x00ffff, name: '❄️🧊 FROZEN SOLID! 🧊❄️' },
+            'pink+yellow': { type: 'viscous', result: 0xffaa00, name: '🍯💧 VISCOUS MIXTURE! 💧🍯' },
+            'green+red': { type: 'jelly', result: 0x88ff44, name: '🍮🎉 JELLY FORMING! 🎉🍮' },
+            'green+blue': { type: 'bubbles', result: 0x0088ff, name: '🫧🌊 BUBBLING UP! 🌊🫧' },
+            'pink+blue': { type: 'none', result: 0xaa44aa, name: '⚪💭 NO REACTION 💭⚪' },
+            'pink+green': { type: 'glow', result: 0x88ff88, name: '✨🌟 GLOWING BRIGHT! 🌟✨' },
+            'red+green': { type: 'viscous', result: 0x888800, name: '🍯🌿 STICKY GOO! 🌿🍯' },
+            'yellow+green': { type: 'jelly', result: 0xaaff44, name: '🍮⚡ SOLIDIFYING! ⚡🍮' }
         };
 
         this.init();
@@ -309,6 +309,16 @@ class ChemistryLab {
         });
 
         beaker.userData.currentVolume += volumeToAdd;
+
+        // Show success notification for pouring
+        const potionEmojis = {
+            red: '🔴',
+            blue: '🔵',
+            yellow: '🟡',
+            pink: '🩷',
+            green: '🟢'
+        };
+        this.showNotification(`${potionEmojis[potionType]} Pouring ${config.name}... ✓`, 800);
 
         // 检查化学反应
         setTimeout(() => {
@@ -752,7 +762,7 @@ class ChemistryLab {
         return bubble;
     }
 
-    showNotification(message) {
+    showNotification(message, duration = 2000) {
         const notification = document.createElement('div');
         notification.className = 'reaction-notification';
         notification.textContent = message;
@@ -760,7 +770,7 @@ class ChemistryLab {
 
         setTimeout(() => {
             document.body.removeChild(notification);
-        }, 2000);
+        }, duration);
     }
 
     setupEventListeners() {
@@ -804,6 +814,7 @@ class ChemistryLab {
         document.getElementById('add-beaker-btn').addEventListener('click', () => {
             if (this.beakers.length < 6) {
                 this.addBeaker();
+                this.showNotification('🧪 New Beaker Added! ✨', 1000);
             } else {
                 this.showNotification('⚠️ MAX BEAKERS REACHED!');
             }
