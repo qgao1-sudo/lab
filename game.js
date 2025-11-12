@@ -1,0 +1,833 @@
+// 化学实验室模拟器 - Three.js 游戏逻辑
+
+class ChemistryLab {
+    constructor() {
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.beakers = [];
+        this.selectedPotion = null;
+        this.selectedTool = 'pour';
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.particles = [];
+        this.animations = [];
+
+        // 药水配置
+        this.potionConfig = {
+            red: { color: 0xff4444, name: '红色药水', viscosity: 1.0 },
+            blue: { color: 0x4444ff, name: '蓝色药水', viscosity: 1.0 },
+            yellow: { color: 0xffff44, name: '黄色药水', viscosity: 1.0 },
+            pink: { color: 0xff69b4, name: '粉色药水', viscosity: 0.8 },
+            green: { color: 0x44ff44, name: '绿色药水', viscosity: 1.2 }
+        };
+
+        // 化学反应配置
+        this.reactionRules = {
+            'red+blue': { type: 'explosion', result: 0x8800ff, name: '爆炸反应!' },
+            'red+yellow': { type: 'bubbles', result: 0xff8800, name: '产生气泡!' },
+            'blue+yellow': { type: 'freeze', result: 0x00ffff, name: '冻结成冰!' },
+            'pink+yellow': { type: 'viscous', result: 0xffaa00, name: '变成粘稠物!' },
+            'green+red': { type: 'jelly', result: 0x88ff44, name: '凝固成果冻!' },
+            'green+blue': { type: 'bubbles', result: 0x0088ff, name: '冒泡反应!' },
+            'pink+blue': { type: 'none', result: 0xaa44aa, name: '无明显反应' },
+            'pink+green': { type: 'glow', result: 0x88ff88, name: '发光反应!' },
+            'red+green': { type: 'viscous', result: 0x888800, name: '变粘稠!' },
+            'yellow+green': { type: 'jelly', result: 0xaaff44, name: '凝固中...' }
+        };
+
+        this.init();
+        this.setupEventListeners();
+        this.animate();
+    }
+
+    init() {
+        // 创建场景
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x1a1a2e);
+        this.scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
+
+        // 创建相机
+        this.camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        this.camera.position.set(0, 5, 10);
+        this.camera.lookAt(0, 2, 0);
+
+        // 创建渲染器
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('canvas-container').appendChild(this.renderer.domElement);
+
+        // 添加光照
+        this.setupLighting();
+
+        // 创建实验室环境
+        this.createLabEnvironment();
+
+        // 添加第一个烧杯
+        this.addBeaker();
+    }
+
+    setupLighting() {
+        // 环境光
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        this.scene.add(ambientLight);
+
+        // 主光源
+        const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        mainLight.position.set(5, 10, 5);
+        mainLight.castShadow = true;
+        mainLight.shadow.camera.left = -10;
+        mainLight.shadow.camera.right = 10;
+        mainLight.shadow.camera.top = 10;
+        mainLight.shadow.camera.bottom = -10;
+        mainLight.shadow.mapSize.width = 2048;
+        mainLight.shadow.mapSize.height = 2048;
+        this.scene.add(mainLight);
+
+        // 点光源（实验室氛围）
+        const pointLight1 = new THREE.PointLight(0x4444ff, 0.5, 20);
+        pointLight1.position.set(-5, 5, 5);
+        this.scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0xff4444, 0.5, 20);
+        pointLight2.position.set(5, 5, 5);
+        this.scene.add(pointLight2);
+
+        // 聚光灯
+        const spotLight = new THREE.SpotLight(0xffffff, 1);
+        spotLight.position.set(0, 10, 0);
+        spotLight.angle = Math.PI / 4;
+        spotLight.penumbra = 0.3;
+        spotLight.castShadow = true;
+        this.scene.add(spotLight);
+    }
+
+    createLabEnvironment() {
+        // 实验桌
+        const tableGeometry = new THREE.BoxGeometry(20, 0.3, 8);
+        const tableMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8B4513,
+            roughness: 0.8,
+            metalness: 0.2
+        });
+        const table = new THREE.Mesh(tableGeometry, tableMaterial);
+        table.position.y = 0;
+        table.receiveShadow = true;
+        this.scene.add(table);
+
+        // 桌面光泽效果
+        const glossGeometry = new THREE.PlaneGeometry(20, 8);
+        const glossMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.05,
+            roughness: 0.1,
+            metalness: 0.9
+        });
+        const gloss = new THREE.Mesh(glossGeometry, glossMaterial);
+        gloss.rotation.x = -Math.PI / 2;
+        gloss.position.y = 0.16;
+        this.scene.add(gloss);
+
+        // 背景墙
+        const wallGeometry = new THREE.PlaneGeometry(25, 15);
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2d3561,
+            roughness: 0.9
+        });
+        const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+        wall.position.set(0, 5, -5);
+        wall.receiveShadow = true;
+        this.scene.add(wall);
+
+        // 添加装饰性货架
+        this.createShelf(-8, 4, -4.8);
+        this.createShelf(8, 4, -4.8);
+    }
+
+    createShelf(x, y, z) {
+        const shelfGroup = new THREE.Group();
+
+        // 架子板
+        const boardGeometry = new THREE.BoxGeometry(3, 0.1, 0.8);
+        const boardMaterial = new THREE.MeshStandardMaterial({
+            color: 0x654321,
+            roughness: 0.7
+        });
+
+        for (let i = 0; i < 3; i++) {
+            const board = new THREE.Mesh(boardGeometry, boardMaterial);
+            board.position.y = i * 1.2;
+            board.castShadow = true;
+            shelfGroup.add(board);
+        }
+
+        shelfGroup.position.set(x, y, z);
+        this.scene.add(shelfGroup);
+    }
+
+    createBeaker(x, z) {
+        const beakerGroup = new THREE.Group();
+        beakerGroup.userData = {
+            liquids: [],
+            capacity: 1.5,
+            currentVolume: 0,
+            reactions: []
+        };
+
+        // 烧杯玻璃体
+        const glassGeometry = new THREE.CylinderGeometry(0.6, 0.5, 2, 32, 1, true);
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.3,
+            roughness: 0.1,
+            metalness: 0.1,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1,
+            transmission: 0.9,
+            thickness: 0.5
+        });
+        const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+        glass.castShadow = true;
+        glass.receiveShadow = true;
+        beakerGroup.add(glass);
+
+        // 烧杯底部
+        const bottomGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.05, 32);
+        const bottomMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.4,
+            roughness: 0.1,
+            metalness: 0.1
+        });
+        const bottom = new THREE.Mesh(bottomGeometry, bottomMaterial);
+        bottom.position.y = -0.975;
+        beakerGroup.add(bottom);
+
+        // 刻度线
+        for (let i = 1; i <= 4; i++) {
+            const lineGeometry = new THREE.TorusGeometry(0.55, 0.01, 8, 32);
+            const lineMaterial = new THREE.MeshBasicMaterial({ color: 0x666666 });
+            const line = new THREE.Mesh(lineGeometry, lineMaterial);
+            line.rotation.x = Math.PI / 2;
+            line.position.y = -0.8 + i * 0.4;
+            beakerGroup.add(line);
+        }
+
+        beakerGroup.position.set(x, 1, z);
+        beakerGroup.userData.isBeaker = true;
+
+        return beakerGroup;
+    }
+
+    addBeaker() {
+        const spacing = 2.5;
+        const x = (this.beakers.length - 2) * spacing;
+        const z = 0;
+
+        const beaker = this.createBeaker(x, z);
+        this.beakers.push(beaker);
+        this.scene.add(beaker);
+    }
+
+    createLiquid(beaker, color, volume, viscosity = 1.0) {
+        const liquidGroup = new THREE.Group();
+
+        // 计算液体高度
+        const height = volume * 1.2;
+        const radius = 0.5;
+
+        // 液体主体
+        const liquidGeometry = new THREE.CylinderGeometry(radius, radius * 0.95, height, 32);
+        const liquidMaterial = new THREE.MeshPhysicalMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.7,
+            roughness: 0.3,
+            metalness: 0.1,
+            clearcoat: 0.5,
+            transmission: 0.3
+        });
+        const liquid = new THREE.Mesh(liquidGeometry, liquidMaterial);
+        liquid.position.y = -1 + height / 2;
+        liquidGroup.add(liquid);
+
+        // 液体表面
+        const surfaceGeometry = new THREE.CircleGeometry(radius, 32);
+        const surfaceMaterial = new THREE.MeshPhysicalMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.6,
+            roughness: 0.1,
+            metalness: 0.3,
+            clearcoat: 1.0
+        });
+        const surface = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
+        surface.rotation.x = -Math.PI / 2;
+        surface.position.y = -1 + height;
+        liquidGroup.add(surface);
+
+        // 添加波纹效果
+        liquidGroup.userData = {
+            color: color,
+            volume: volume,
+            viscosity: viscosity,
+            time: 0
+        };
+
+        beaker.add(liquidGroup);
+        return liquidGroup;
+    }
+
+    addLiquidToBeaker(beaker, potionType) {
+        const config = this.potionConfig[potionType];
+        const volumeToAdd = 0.3;
+
+        if (beaker.userData.currentVolume + volumeToAdd > beaker.userData.capacity) {
+            this.showNotification('烧杯已满！');
+            return;
+        }
+
+        // 创建倾倒动画
+        this.createPourAnimation(beaker, config.color, volumeToAdd);
+
+        // 添加液体数据
+        beaker.userData.liquids.push({
+            type: potionType,
+            color: config.color,
+            volume: volumeToAdd,
+            viscosity: config.viscosity
+        });
+
+        beaker.userData.currentVolume += volumeToAdd;
+
+        // 检查化学反应
+        setTimeout(() => {
+            this.checkReactions(beaker);
+            this.updateBeakerLiquid(beaker);
+        }, 1000);
+    }
+
+    createPourAnimation(beaker, color, volume) {
+        const droplets = [];
+        const dropletCount = 20;
+
+        for (let i = 0; i < dropletCount; i++) {
+            const dropletGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+            const dropletMaterial = new THREE.MeshPhysicalMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.8,
+                roughness: 0.2,
+                metalness: 0.3
+            });
+            const droplet = new THREE.Mesh(dropletGeometry, dropletMaterial);
+
+            droplet.position.set(
+                beaker.position.x + (Math.random() - 0.5) * 0.3,
+                beaker.position.y + 2 + Math.random() * 0.5,
+                beaker.position.z
+            );
+
+            droplet.userData = {
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    -0.05 - Math.random() * 0.03,
+                    (Math.random() - 0.5) * 0.02
+                ),
+                life: 1.0
+            };
+
+            this.scene.add(droplet);
+            droplets.push(droplet);
+        }
+
+        this.animations.push({
+            type: 'pour',
+            droplets: droplets,
+            beaker: beaker,
+            time: 0,
+            duration: 1.0
+        });
+    }
+
+    updateBeakerLiquid(beaker) {
+        // 移除旧液体
+        const oldLiquids = beaker.children.filter(child => child.userData.volume !== undefined);
+        oldLiquids.forEach(liquid => beaker.remove(liquid));
+
+        // 计算混合后的颜色和总体积
+        let totalVolume = 0;
+        let mixedColor = new THREE.Color(0x000000);
+        let totalViscosity = 0;
+
+        beaker.userData.liquids.forEach(liquid => {
+            totalVolume += liquid.volume;
+            const color = new THREE.Color(liquid.color);
+            mixedColor.r += color.r * liquid.volume;
+            mixedColor.g += color.g * liquid.volume;
+            mixedColor.b += color.b * liquid.volume;
+            totalViscosity += liquid.viscosity * liquid.volume;
+        });
+
+        if (totalVolume > 0) {
+            mixedColor.r /= totalVolume;
+            mixedColor.g /= totalVolume;
+            mixedColor.b /= totalVolume;
+            totalViscosity /= totalVolume;
+
+            this.createLiquid(beaker, mixedColor.getHex(), totalVolume, totalViscosity);
+        }
+    }
+
+    checkReactions(beaker) {
+        const liquids = beaker.userData.liquids;
+        if (liquids.length < 2) return;
+
+        // 检查最后两种液体的反应
+        const last = liquids[liquids.length - 1];
+        const secondLast = liquids[liquids.length - 2];
+
+        const key1 = `${last.type}+${secondLast.type}`;
+        const key2 = `${secondLast.type}+${last.type}`;
+
+        const reaction = this.reactionRules[key1] || this.reactionRules[key2];
+
+        if (reaction) {
+            this.triggerReaction(beaker, reaction);
+        }
+    }
+
+    triggerReaction(beaker, reaction) {
+        this.showNotification(reaction.name);
+
+        switch (reaction.type) {
+            case 'explosion':
+                this.createExplosion(beaker);
+                break;
+            case 'bubbles':
+                this.createBubbles(beaker);
+                break;
+            case 'freeze':
+                this.createFreezeEffect(beaker);
+                break;
+            case 'viscous':
+                this.createViscousEffect(beaker);
+                break;
+            case 'jelly':
+                this.createJellyEffect(beaker);
+                break;
+            case 'glow':
+                this.createGlowEffect(beaker);
+                break;
+        }
+
+        // 更新液体颜色为反应结果
+        beaker.userData.liquids = [{
+            type: 'reaction',
+            color: reaction.result,
+            volume: beaker.userData.currentVolume,
+            viscosity: 1.0
+        }];
+
+        this.updateBeakerLiquid(beaker);
+    }
+
+    createExplosion(beaker) {
+        const particleCount = 100;
+        const particles = [];
+
+        for (let i = 0; i < particleCount; i++) {
+            const geometry = new THREE.SphereGeometry(0.05, 8, 8);
+            const material = new THREE.MeshBasicMaterial({
+                color: new THREE.Color(Math.random(), Math.random(), 0.5),
+                transparent: true,
+                opacity: 1
+            });
+            const particle = new THREE.Mesh(geometry, material);
+
+            particle.position.copy(beaker.position);
+            particle.position.y += 1;
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 0.1 + Math.random() * 0.2;
+            particle.userData = {
+                velocity: new THREE.Vector3(
+                    Math.cos(angle) * speed,
+                    Math.random() * 0.3,
+                    Math.sin(angle) * speed
+                ),
+                life: 1.0
+            };
+
+            this.scene.add(particle);
+            particles.push(particle);
+        }
+
+        this.particles.push(...particles);
+
+        // 震动效果
+        this.shakeBeaker(beaker);
+    }
+
+    createBubbles(beaker) {
+        const animation = {
+            type: 'bubbles',
+            beaker: beaker,
+            time: 0,
+            duration: 3.0,
+            bubbles: []
+        };
+
+        this.animations.push(animation);
+    }
+
+    createFreezeEffect(beaker) {
+        // 添加冰晶效果
+        const iceGroup = new THREE.Group();
+
+        for (let i = 0; i < 20; i++) {
+            const geometry = new THREE.OctahedronGeometry(0.1, 0);
+            const material = new THREE.MeshPhysicalMaterial({
+                color: 0xaaffff,
+                transparent: true,
+                opacity: 0.6,
+                roughness: 0.1,
+                metalness: 0.8,
+                clearcoat: 1.0
+            });
+            const crystal = new THREE.Mesh(geometry, material);
+
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * 0.4;
+            crystal.position.set(
+                Math.cos(angle) * radius,
+                -0.5 + Math.random() * 1.5,
+                Math.sin(angle) * radius
+            );
+            crystal.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
+            );
+
+            iceGroup.add(crystal);
+        }
+
+        beaker.add(iceGroup);
+        iceGroup.userData.type = 'freeze';
+
+        this.showNotification('液体冻结成冰！');
+    }
+
+    createViscousEffect(beaker) {
+        this.showNotification('液体变得粘稠！');
+
+        // 添加粘稠动画
+        const animation = {
+            type: 'viscous',
+            beaker: beaker,
+            time: 0,
+            duration: 2.0
+        };
+        this.animations.push(animation);
+    }
+
+    createJellyEffect(beaker) {
+        this.showNotification('液体凝固成果冻！');
+
+        // 添加果冻晃动效果
+        const animation = {
+            type: 'jelly',
+            beaker: beaker,
+            time: 0,
+            duration: 3.0
+        };
+        this.animations.push(animation);
+    }
+
+    createGlowEffect(beaker) {
+        // 添加发光效果
+        const glowLight = new THREE.PointLight(0x88ff88, 2, 5);
+        glowLight.position.copy(beaker.position);
+        glowLight.position.y += 1;
+        this.scene.add(glowLight);
+
+        beaker.userData.glowLight = glowLight;
+
+        const animation = {
+            type: 'glow',
+            beaker: beaker,
+            light: glowLight,
+            time: 0,
+            duration: 3.0
+        };
+        this.animations.push(animation);
+    }
+
+    shakeBeaker(beaker) {
+        const originalPos = beaker.position.clone();
+        const animation = {
+            type: 'shake',
+            beaker: beaker,
+            originalPos: originalPos,
+            time: 0,
+            duration: 0.5
+        };
+        this.animations.push(animation);
+    }
+
+    updateAnimations(deltaTime) {
+        // 更新所有动画
+        for (let i = this.animations.length - 1; i >= 0; i--) {
+            const anim = this.animations[i];
+            anim.time += deltaTime;
+
+            if (anim.type === 'pour') {
+                anim.droplets.forEach(droplet => {
+                    droplet.position.add(droplet.userData.velocity);
+                    droplet.userData.velocity.y -= 0.002; // 重力
+
+                    if (droplet.position.y < anim.beaker.position.y - 0.5) {
+                        this.scene.remove(droplet);
+                    }
+                });
+
+                if (anim.time > anim.duration) {
+                    anim.droplets.forEach(d => this.scene.remove(d));
+                    this.animations.splice(i, 1);
+                }
+            }
+
+            else if (anim.type === 'bubbles') {
+                // 生成气泡
+                if (Math.random() < 0.3) {
+                    const bubble = this.createBubble(anim.beaker);
+                    anim.bubbles.push(bubble);
+                }
+
+                // 更新气泡
+                anim.bubbles = anim.bubbles.filter(bubble => {
+                    bubble.position.y += 0.02;
+                    bubble.userData.life -= 0.01;
+                    bubble.material.opacity = bubble.userData.life;
+
+                    if (bubble.userData.life <= 0) {
+                        this.scene.remove(bubble);
+                        return false;
+                    }
+                    return true;
+                });
+
+                if (anim.time > anim.duration) {
+                    anim.bubbles.forEach(b => this.scene.remove(b));
+                    this.animations.splice(i, 1);
+                }
+            }
+
+            else if (anim.type === 'shake') {
+                const progress = anim.time / anim.duration;
+                if (progress < 1) {
+                    const shake = Math.sin(progress * Math.PI * 20) * (1 - progress) * 0.1;
+                    anim.beaker.position.x = anim.originalPos.x + shake;
+                } else {
+                    anim.beaker.position.copy(anim.originalPos);
+                    this.animations.splice(i, 1);
+                }
+            }
+
+            else if (anim.type === 'jelly') {
+                // 果冻晃动
+                const liquids = anim.beaker.children.filter(c => c.userData.volume);
+                liquids.forEach(liquid => {
+                    liquid.rotation.z = Math.sin(anim.time * 5) * 0.1;
+                    liquid.scale.y = 1 + Math.sin(anim.time * 8) * 0.05;
+                });
+
+                if (anim.time > anim.duration) {
+                    liquids.forEach(l => {
+                        l.rotation.z = 0;
+                        l.scale.y = 1;
+                    });
+                    this.animations.splice(i, 1);
+                }
+            }
+
+            else if (anim.type === 'glow') {
+                anim.light.intensity = 2 + Math.sin(anim.time * 5) * 1;
+
+                if (anim.time > anim.duration) {
+                    this.scene.remove(anim.light);
+                    this.animations.splice(i, 1);
+                }
+            }
+        }
+
+        // 更新粒子
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const particle = this.particles[i];
+            particle.position.add(particle.userData.velocity);
+            particle.userData.velocity.y -= 0.005; // 重力
+            particle.userData.life -= 0.02;
+            particle.material.opacity = particle.userData.life;
+
+            if (particle.userData.life <= 0) {
+                this.scene.remove(particle);
+                this.particles.splice(i, 1);
+            }
+        }
+    }
+
+    createBubble(beaker) {
+        const geometry = new THREE.SphereGeometry(0.05 + Math.random() * 0.05, 16, 16);
+        const material = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.3,
+            roughness: 0,
+            metalness: 0.1,
+            clearcoat: 1.0,
+            transmission: 0.95
+        });
+        const bubble = new THREE.Mesh(geometry, material);
+
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.random() * 0.3;
+        bubble.position.set(
+            beaker.position.x + Math.cos(angle) * radius,
+            beaker.position.y - 0.5 + Math.random() * 0.5,
+            beaker.position.z + Math.sin(angle) * radius
+        );
+
+        bubble.userData.life = 1.0;
+
+        this.scene.add(bubble);
+        return bubble;
+    }
+
+    showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'reaction-notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 2000);
+    }
+
+    setupEventListeners() {
+        // 窗口调整
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 鼠标移动
+        window.addEventListener('mousemove', (event) => {
+            this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // 点击事件
+        window.addEventListener('click', (event) => {
+            this.handleClick(event);
+        });
+
+        // 药水选择
+        document.querySelectorAll('.potion-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.potion-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+                this.selectedPotion = item.dataset.potion;
+            });
+        });
+
+        // 工具选择
+        document.querySelectorAll('.tool-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.tool-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+                this.selectedTool = item.dataset.tool;
+            });
+        });
+
+        // 添加烧杯按钮
+        document.getElementById('add-beaker-btn').addEventListener('click', () => {
+            if (this.beakers.length < 6) {
+                this.addBeaker();
+            } else {
+                this.showNotification('烧杯数量已达上限！');
+            }
+        });
+    }
+
+    handleClick(event) {
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+
+        // 检测烧杯点击
+        const beakerMeshes = [];
+        this.beakers.forEach(beaker => {
+            beaker.children.forEach(child => {
+                if (child.isMesh) {
+                    beakerMeshes.push({ mesh: child, beaker: beaker });
+                }
+            });
+        });
+
+        const intersects = this.raycaster.intersectObjects(beakerMeshes.map(b => b.mesh));
+
+        if (intersects.length > 0 && this.selectedPotion) {
+            const clickedMesh = intersects[0].object;
+            const beakerData = beakerMeshes.find(b => b.mesh === clickedMesh);
+
+            if (beakerData) {
+                this.addLiquidToBeaker(beakerData.beaker, this.selectedPotion);
+            }
+        }
+    }
+
+    animate() {
+        requestAnimationFrame(() => this.animate());
+
+        const deltaTime = 0.016; // ~60fps
+
+        // 更新动画
+        this.updateAnimations(deltaTime);
+
+        // 液体波动效果
+        this.beakers.forEach(beaker => {
+            const liquids = beaker.children.filter(child => child.userData.volume !== undefined);
+            liquids.forEach(liquid => {
+                liquid.userData.time += deltaTime;
+                const wave = Math.sin(liquid.userData.time * 2) * 0.02;
+                liquid.children.forEach(child => {
+                    if (child.geometry.type === 'CircleGeometry') {
+                        child.position.y += wave * 0.5;
+                    }
+                });
+            });
+        });
+
+        // 相机轻微摆动
+        this.camera.position.x = Math.sin(Date.now() * 0.0001) * 0.5;
+        this.camera.lookAt(0, 2, 0);
+
+        this.renderer.render(this.scene, this.camera);
+    }
+}
+
+// 初始化游戏
+window.addEventListener('DOMContentLoaded', () => {
+    new ChemistryLab();
+});
