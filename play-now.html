@@ -162,8 +162,8 @@ class ChemistryLab {
     }
 
     createLabEnvironment() {
-        // 实验桌
-        const tableGeometry = new THREE.BoxGeometry(20, 0.3, 8);
+        // 实验桌 - 提高位置以适应新的相机视角
+        const tableGeometry = new THREE.BoxGeometry(25, 0.4, 10);
         const tableMaterial = new THREE.MeshStandardMaterial({
             color: 0x8B4513,
             roughness: 0.8,
@@ -175,7 +175,7 @@ class ChemistryLab {
         this.scene.add(table);
 
         // 桌面光泽效果
-        const glossGeometry = new THREE.PlaneGeometry(20, 8);
+        const glossGeometry = new THREE.PlaneGeometry(25, 10);
         const glossMaterial = new THREE.MeshStandardMaterial({
             color: 0xffffff,
             transparent: true,
@@ -185,30 +185,30 @@ class ChemistryLab {
         });
         const gloss = new THREE.Mesh(glossGeometry, glossMaterial);
         gloss.rotation.x = -Math.PI / 2;
-        gloss.position.y = 0.16;
+        gloss.position.y = 0.21;
         this.scene.add(gloss);
 
-        // 背景墙
-        const wallGeometry = new THREE.PlaneGeometry(25, 15);
+        // 背景墙 - 调整位置
+        const wallGeometry = new THREE.PlaneGeometry(30, 12);
         const wallMaterial = new THREE.MeshStandardMaterial({
             color: 0x2d3561,
             roughness: 0.9
         });
         const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-        wall.position.set(0, 5, -5);
+        wall.position.set(0, 4, -6);
         wall.receiveShadow = true;
         this.scene.add(wall);
 
         // 添加装饰性货架
-        this.createShelf(-8, 4, -4.8);
-        this.createShelf(8, 4, -4.8);
+        this.createShelf(-9, 3.5, -5.8);
+        this.createShelf(9, 3.5, -5.8);
     }
 
     createShelf(x, y, z) {
         const shelfGroup = new THREE.Group();
 
-        // 架子板
-        const boardGeometry = new THREE.BoxGeometry(3, 0.1, 0.8);
+        // 架子板 - 稍微放大
+        const boardGeometry = new THREE.BoxGeometry(4, 0.12, 1);
         const boardMaterial = new THREE.MeshStandardMaterial({
             color: 0x654321,
             roughness: 0.7
@@ -216,7 +216,7 @@ class ChemistryLab {
 
         for (let i = 0; i < 3; i++) {
             const board = new THREE.Mesh(boardGeometry, boardMaterial);
-            board.position.y = i * 1.2;
+            board.position.y = i * 1.5;
             board.castShadow = true;
             shelfGroup.add(board);
         }
