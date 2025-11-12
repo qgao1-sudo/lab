@@ -47,15 +47,15 @@ class ChemistryLab {
         this.scene.background = new THREE.Color(0x1a1a2e);
         this.scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
 
-        // 创建相机
+        // 创建相机 - 更水平的视角
         this.camera = new THREE.PerspectiveCamera(
             75,
             window.innerWidth / window.innerHeight,
             0.1,
             1000
         );
-        this.camera.position.set(0, 5, 10);
-        this.camera.lookAt(0, 2, 0);
+        this.camera.position.set(0, 3, 12);
+        this.camera.lookAt(0, 2.5, 0);
 
         // 创建渲染器
         this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -182,8 +182,8 @@ class ChemistryLab {
             reactions: []
         };
 
-        // 烧杯玻璃体
-        const glassGeometry = new THREE.CylinderGeometry(0.6, 0.5, 2, 32, 1, true);
+        // 烧杯玻璃体 - 放大1.5倍
+        const glassGeometry = new THREE.CylinderGeometry(0.9, 0.75, 3, 32, 1, true);
         const glassMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
             transparent: true,
@@ -200,8 +200,8 @@ class ChemistryLab {
         glass.receiveShadow = true;
         beakerGroup.add(glass);
 
-        // 烧杯底部
-        const bottomGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.05, 32);
+        // 烧杯底部 - 放大1.5倍
+        const bottomGeometry = new THREE.CylinderGeometry(0.75, 0.75, 0.08, 32);
         const bottomMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
             transparent: true,
@@ -210,27 +210,27 @@ class ChemistryLab {
             metalness: 0.1
         });
         const bottom = new THREE.Mesh(bottomGeometry, bottomMaterial);
-        bottom.position.y = -0.975;
+        bottom.position.y = -1.46;
         beakerGroup.add(bottom);
 
-        // 刻度线
+        // 刻度线 - 放大1.5倍
         for (let i = 1; i <= 4; i++) {
-            const lineGeometry = new THREE.TorusGeometry(0.55, 0.01, 8, 32);
+            const lineGeometry = new THREE.TorusGeometry(0.83, 0.015, 8, 32);
             const lineMaterial = new THREE.MeshBasicMaterial({ color: 0x666666 });
             const line = new THREE.Mesh(lineGeometry, lineMaterial);
             line.rotation.x = Math.PI / 2;
-            line.position.y = -0.8 + i * 0.4;
+            line.position.y = -1.2 + i * 0.6;
             beakerGroup.add(line);
         }
 
-        beakerGroup.position.set(x, 1, z);
+        beakerGroup.position.set(x, 1.5, z);
         beakerGroup.userData.isBeaker = true;
 
         return beakerGroup;
     }
 
     addBeaker() {
-        const spacing = 2.5;
+        const spacing = 3.5; // Increased spacing for larger beakers
         const x = (this.beakers.length - 2) * spacing;
         const z = 0;
 
@@ -242,9 +242,9 @@ class ChemistryLab {
     createLiquid(beaker, color, volume, viscosity = 1.0) {
         const liquidGroup = new THREE.Group();
 
-        // 计算液体高度
-        const height = volume * 1.2;
-        const radius = 0.5;
+        // 计算液体高度 - 调整以适应更大的烧杯
+        const height = volume * 1.8;
+        const radius = 0.75;
 
         // 液体主体
         const liquidGeometry = new THREE.CylinderGeometry(radius, radius * 0.95, height, 32);
@@ -258,7 +258,7 @@ class ChemistryLab {
             transmission: 0.3
         });
         const liquid = new THREE.Mesh(liquidGeometry, liquidMaterial);
-        liquid.position.y = -1 + height / 2;
+        liquid.position.y = -1.5 + height / 2;
         liquidGroup.add(liquid);
 
         // 液体表面
@@ -273,7 +273,7 @@ class ChemistryLab {
         });
         const surface = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
         surface.rotation.x = -Math.PI / 2;
-        surface.position.y = -1 + height;
+        surface.position.y = -1.5 + height;
         liquidGroup.add(surface);
 
         // 添加波纹效果
@@ -447,7 +447,7 @@ class ChemistryLab {
         const particles = [];
 
         for (let i = 0; i < particleCount; i++) {
-            const geometry = new THREE.SphereGeometry(0.08, 8, 8); // Larger particles
+            const geometry = new THREE.SphereGeometry(0.12, 8, 8); // Larger particles for bigger beaker
             const material = new THREE.MeshBasicMaterial({
                 color: new THREE.Color(Math.random(), Math.random() * 0.5, Math.random() * 0.5),
                 transparent: true,
@@ -456,7 +456,7 @@ class ChemistryLab {
             const particle = new THREE.Mesh(geometry, material);
 
             particle.position.copy(beaker.position);
-            particle.position.y += 1;
+            particle.position.y += 1.5;
 
             const angle = Math.random() * Math.PI * 2;
             const verticalAngle = (Math.random() - 0.3) * Math.PI / 2;
@@ -480,9 +480,9 @@ class ChemistryLab {
         this.shakeBeaker(beaker);
 
         // Add flash effect
-        const flash = new THREE.PointLight(0xff6600, 5, 10);
+        const flash = new THREE.PointLight(0xff6600, 8, 15);
         flash.position.copy(beaker.position);
-        flash.position.y += 1;
+        flash.position.y += 2;
         this.scene.add(flash);
 
         setTimeout(() => this.scene.remove(flash), 300);
@@ -506,7 +506,7 @@ class ChemistryLab {
         const iceGroup = new THREE.Group();
 
         for (let i = 0; i < 50; i++) { // Increased from 20
-            const size = 0.08 + Math.random() * 0.15; // Variable sizes
+            const size = 0.12 + Math.random() * 0.22; // Larger ice crystals
             const geometry = new THREE.OctahedronGeometry(size, 0);
             const material = new THREE.MeshPhysicalMaterial({
                 color: 0xaaffff,
@@ -520,10 +520,10 @@ class ChemistryLab {
             const crystal = new THREE.Mesh(geometry, material);
 
             const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * 0.45;
+            const radius = Math.random() * 0.65;
             crystal.position.set(
                 Math.cos(angle) * radius,
-                -0.5 + Math.random() * 1.8,
+                -0.8 + Math.random() * 2.5,
                 Math.sin(angle) * radius
             );
             crystal.rotation.set(
@@ -539,9 +539,9 @@ class ChemistryLab {
         iceGroup.userData.type = 'freeze';
 
         // Add freeze light effect
-        const freezeLight = new THREE.PointLight(0x00ffff, 3, 5);
+        const freezeLight = new THREE.PointLight(0x00ffff, 5, 8);
         freezeLight.position.copy(beaker.position);
-        freezeLight.position.y += 1;
+        freezeLight.position.y += 2;
         this.scene.add(freezeLight);
 
         setTimeout(() => this.scene.remove(freezeLight), 1000);
@@ -579,9 +579,9 @@ class ChemistryLab {
 
     createGlowEffect(beaker) {
         // Enhanced glow effect
-        const glowLight = new THREE.PointLight(0x88ff88, 4, 8); // Brighter and larger
+        const glowLight = new THREE.PointLight(0x88ff88, 6, 12); // Brighter and larger for bigger beaker
         glowLight.position.copy(beaker.position);
-        glowLight.position.y += 1;
+        glowLight.position.y += 2;
         this.scene.add(glowLight);
 
         beaker.userData.glowLight = glowLight;
@@ -592,7 +592,7 @@ class ChemistryLab {
             light: glowLight,
             time: 0,
             duration: 5.0, // Longer glow
-            maxIntensity: 6 // Brighter pulses
+            maxIntensity: 8 // Brighter pulses
         };
         this.animations.push(animation);
     }
@@ -725,7 +725,7 @@ class ChemistryLab {
     }
 
     createBubble(beaker) {
-        const geometry = new THREE.SphereGeometry(0.08 + Math.random() * 0.12, 16, 16); // Larger bubbles
+        const geometry = new THREE.SphereGeometry(0.12 + Math.random() * 0.18, 16, 16); // Even larger bubbles
         const material = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
             transparent: true,
@@ -739,10 +739,10 @@ class ChemistryLab {
         const bubble = new THREE.Mesh(geometry, material);
 
         const angle = Math.random() * Math.PI * 2;
-        const radius = Math.random() * 0.35;
+        const radius = Math.random() * 0.55;
         bubble.position.set(
             beaker.position.x + Math.cos(angle) * radius,
-            beaker.position.y - 0.5 + Math.random() * 0.3,
+            beaker.position.y - 0.8 + Math.random() * 0.5,
             beaker.position.z + Math.sin(angle) * radius
         );
 
@@ -859,7 +859,7 @@ class ChemistryLab {
 
         // 相机轻微摆动
         this.camera.position.x = Math.sin(Date.now() * 0.0001) * 0.5;
-        this.camera.lookAt(0, 2, 0);
+        this.camera.lookAt(0, 2.5, 0);
 
         this.renderer.render(this.scene, this.camera);
     }
