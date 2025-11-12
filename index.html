@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化学实验室模拟器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 10;
+        }
+
+        #potion-selector {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .potion-item {
+            width: 60px;
+            height: 80px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .potion-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .potion-item.selected {
+            border-color: #ffd700;
+            transform: scale(1.1);
+        }
+
+        .potion-bottle {
+            width: 40px;
+            height: 60px;
+            background: linear-gradient(180deg, transparent 20%, currentColor 20%);
+            border-radius: 5px;
+            position: relative;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .potion-bottle::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .potion-name {
+            font-size: 10px;
+            margin-top: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #tool-selector {
+            position: absolute;
+            top: 120px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .tool-item {
+            width: 80px;
+            height: 80px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .tool-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-item.selected {
+            border-color: #ffd700;
+            background: #fff5cc;
+        }
+
+        #add-beaker-btn {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        #add-beaker-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        #add-beaker-btn:active {
+            transform: scale(0.95);
+        }
+
+        .reaction-notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="info">
+        <h3>🧪 化学实验室模拟器</h3>
+        <p>• 点击左下角 + 添加烧杯</p>
+        <p>• 选择药水后点击烧杯倒入</p>
+        <p>• 使用滴管精确控制液体</p>
+        <p>• 混合不同液体观察反应</p>
+    </div>
+
+    <button id="add-beaker-btn" title="添加烧杯">🧪</button>
+
+    <div id="potion-selector">
+        <div class="potion-item" data-potion="red">
+            <div class="potion-bottle" style="color: #ff4444;"></div>
+            <div class="potion-name">红色药水</div>
+        </div>
+        <div class="potion-item" data-potion="blue">
+            <div class="potion-bottle" style="color: #4444ff;"></div>
+            <div class="potion-name">蓝色药水</div>
+        </div>
+        <div class="potion-item" data-potion="yellow">
+            <div class="potion-bottle" style="color: #ffff44;"></div>
+            <div class="potion-name">黄色药水</div>
+        </div>
+        <div class="potion-item" data-potion="pink">
+            <div class="potion-bottle" style="color: #ff69b4;"></div>
+            <div class="potion-name">粉色药水</div>
+        </div>
+        <div class="potion-item" data-potion="green">
+            <div class="potion-bottle" style="color: #44ff44;"></div>
+            <div class="potion-name">绿色药水</div>
+        </div>
+    </div>
+
+    <div id="tool-selector">
+        <div class="tool-item" data-tool="dropper" title="滴管">💧</div>
+        <div class="tool-item" data-tool="pour" title="倾倒" style="margin-bottom: 0;">🫗</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
