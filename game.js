@@ -182,8 +182,8 @@ class ChemistryLab {
             reactions: []
         };
 
-        // 烧杯玻璃体 - 放大1.5倍
-        const glassGeometry = new THREE.CylinderGeometry(0.9, 0.75, 3, 32, 1, true);
+        // 烧杯玻璃体 - 放大2倍
+        const glassGeometry = new THREE.CylinderGeometry(1.2, 1.0, 4, 32, 1, true);
         const glassMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
             transparent: true,
@@ -200,8 +200,8 @@ class ChemistryLab {
         glass.receiveShadow = true;
         beakerGroup.add(glass);
 
-        // 烧杯底部 - 放大1.5倍
-        const bottomGeometry = new THREE.CylinderGeometry(0.75, 0.75, 0.08, 32);
+        // 烧杯底部 - 放大2倍
+        const bottomGeometry = new THREE.CylinderGeometry(1.0, 1.0, 0.1, 32);
         const bottomMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
             transparent: true,
@@ -210,27 +210,27 @@ class ChemistryLab {
             metalness: 0.1
         });
         const bottom = new THREE.Mesh(bottomGeometry, bottomMaterial);
-        bottom.position.y = -1.46;
+        bottom.position.y = -1.95;
         beakerGroup.add(bottom);
 
-        // 刻度线 - 放大1.5倍
+        // 刻度线 - 放大2倍
         for (let i = 1; i <= 4; i++) {
-            const lineGeometry = new THREE.TorusGeometry(0.83, 0.015, 8, 32);
+            const lineGeometry = new THREE.TorusGeometry(1.1, 0.02, 8, 32);
             const lineMaterial = new THREE.MeshBasicMaterial({ color: 0x666666 });
             const line = new THREE.Mesh(lineGeometry, lineMaterial);
             line.rotation.x = Math.PI / 2;
-            line.position.y = -1.2 + i * 0.6;
+            line.position.y = -1.6 + i * 0.8;
             beakerGroup.add(line);
         }
 
-        beakerGroup.position.set(x, 1.5, z);
+        beakerGroup.position.set(x, 2, z);
         beakerGroup.userData.isBeaker = true;
 
         return beakerGroup;
     }
 
     addBeaker() {
-        const spacing = 3.5; // Increased spacing for larger beakers
+        const spacing = 4.5; // Increased spacing for 2x larger beakers
         const x = (this.beakers.length - 2) * spacing;
         const z = 0;
 
@@ -242,9 +242,9 @@ class ChemistryLab {
     createLiquid(beaker, color, volume, viscosity = 1.0) {
         const liquidGroup = new THREE.Group();
 
-        // 计算液体高度 - 调整以适应更大的烧杯
-        const height = volume * 1.8;
-        const radius = 0.75;
+        // 计算液体高度 - 2x beaker scale
+        const height = volume * 2.4;
+        const radius = 1.0; // Matches new beaker bottom radius
 
         // 液体主体
         const liquidGeometry = new THREE.CylinderGeometry(radius, radius * 0.95, height, 32);
@@ -258,7 +258,7 @@ class ChemistryLab {
             transmission: 0.3
         });
         const liquid = new THREE.Mesh(liquidGeometry, liquidMaterial);
-        liquid.position.y = -1.5 + height / 2;
+        liquid.position.y = -1.95 + height / 2; // Adjusted for new beaker bottom position
         liquidGroup.add(liquid);
 
         // 液体表面
@@ -273,7 +273,7 @@ class ChemistryLab {
         });
         const surface = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
         surface.rotation.x = -Math.PI / 2;
-        surface.position.y = -1.5 + height;
+        surface.position.y = -1.95 + height; // Adjusted for new beaker bottom position
         liquidGroup.add(surface);
 
         // 添加波纹效果
@@ -456,7 +456,7 @@ class ChemistryLab {
             const particle = new THREE.Mesh(geometry, material);
 
             particle.position.copy(beaker.position);
-            particle.position.y += 1.5;
+            particle.position.y += 2; // Adjusted for 2x beaker height
 
             const angle = Math.random() * Math.PI * 2;
             const verticalAngle = (Math.random() - 0.3) * Math.PI / 2;
@@ -482,7 +482,7 @@ class ChemistryLab {
         // Add flash effect
         const flash = new THREE.PointLight(0xff6600, 8, 15);
         flash.position.copy(beaker.position);
-        flash.position.y += 2;
+        flash.position.y += 2.5; // Adjusted for 2x beaker height
         this.scene.add(flash);
 
         setTimeout(() => this.scene.remove(flash), 300);
@@ -520,10 +520,10 @@ class ChemistryLab {
             const crystal = new THREE.Mesh(geometry, material);
 
             const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * 0.65;
+            const radius = Math.random() * 0.90; // Larger radius for 2x beaker
             crystal.position.set(
                 Math.cos(angle) * radius,
-                -0.8 + Math.random() * 2.5,
+                -1.2 + Math.random() * 3.5, // Adjusted for 2x beaker height
                 Math.sin(angle) * radius
             );
             crystal.rotation.set(
@@ -541,7 +541,7 @@ class ChemistryLab {
         // Add freeze light effect
         const freezeLight = new THREE.PointLight(0x00ffff, 5, 8);
         freezeLight.position.copy(beaker.position);
-        freezeLight.position.y += 2;
+        freezeLight.position.y += 2.5; // Adjusted for 2x beaker height
         this.scene.add(freezeLight);
 
         setTimeout(() => this.scene.remove(freezeLight), 1000);
@@ -581,7 +581,7 @@ class ChemistryLab {
         // Enhanced glow effect
         const glowLight = new THREE.PointLight(0x88ff88, 6, 12); // Brighter and larger for bigger beaker
         glowLight.position.copy(beaker.position);
-        glowLight.position.y += 2;
+        glowLight.position.y += 2.5; // Adjusted for 2x beaker height
         this.scene.add(glowLight);
 
         beaker.userData.glowLight = glowLight;
@@ -739,10 +739,10 @@ class ChemistryLab {
         const bubble = new THREE.Mesh(geometry, material);
 
         const angle = Math.random() * Math.PI * 2;
-        const radius = Math.random() * 0.55;
+        const radius = Math.random() * 0.85; // Larger radius for 2x beaker
         bubble.position.set(
             beaker.position.x + Math.cos(angle) * radius,
-            beaker.position.y - 0.8 + Math.random() * 0.5,
+            beaker.position.y - 1.2 + Math.random() * 0.8, // Adjusted for 2x beaker height
             beaker.position.z + Math.sin(angle) * radius
         );
 
