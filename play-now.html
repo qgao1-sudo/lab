@@ -105,42 +105,6 @@
             color: #333;
         }
 
-        #tool-selector {
-            position: absolute;
-            top: 120px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            z-index: 10;
-        }
-
-        .tool-item {
-            width: 80px;
-            height: 80px;
-            background: #f0f0f0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-
-        .tool-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .tool-item.selected {
-            border-color: #ffd700;
-            background: #fff5cc;
-        }
-
         #add-beaker-btn {
             width: 80px;
             height: 80px;
@@ -198,7 +162,6 @@
         <h3>🧪 Chemistry Lab Simulator</h3>
         <p>• Click + to add beakers</p>
         <p>• Select potion and click beaker to pour</p>
-        <p>• Use dropper for precise control</p>
         <p>• Mix liquids to observe reactions</p>
     </div>
 
@@ -227,11 +190,6 @@
         </div>
     </div>
 
-    <div id="tool-selector">
-        <div class="tool-item" data-tool="dropper" title="Dropper">💧</div>
-        <div class="tool-item" data-tool="pour" title="Pour" style="margin-bottom: 0;">🫗</div>
-    </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
 // 化学实验室模拟器 - Three.js 游戏逻辑
@@ -243,7 +201,6 @@ class ChemistryLab {
         this.renderer = null;
         this.beakers = [];
         this.selectedPotion = null;
-        this.selectedTool = 'pour';
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
         this.particles = [];
@@ -1163,15 +1120,6 @@ class ChemistryLab {
                 document.querySelectorAll('.potion-item').forEach(i => i.classList.remove('selected'));
                 item.classList.add('selected');
                 this.selectedPotion = item.dataset.potion;
-            });
-        });
-
-        // 工具选择
-        document.querySelectorAll('.tool-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.tool-item').forEach(i => i.classList.remove('selected'));
-                item.classList.add('selected');
-                this.selectedTool = item.dataset.tool;
             });
         });
 

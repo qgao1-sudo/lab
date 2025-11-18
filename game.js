@@ -7,7 +7,6 @@ class ChemistryLab {
         this.renderer = null;
         this.beakers = [];
         this.selectedPotion = null;
-        this.selectedTool = 'pour';
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
         this.particles = [];
@@ -927,15 +926,6 @@ class ChemistryLab {
                 document.querySelectorAll('.potion-item').forEach(i => i.classList.remove('selected'));
                 item.classList.add('selected');
                 this.selectedPotion = item.dataset.potion;
-            });
-        });
-
-        // 工具选择
-        document.querySelectorAll('.tool-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.tool-item').forEach(i => i.classList.remove('selected'));
-                item.classList.add('selected');
-                this.selectedTool = item.dataset.tool;
             });
         });
 
