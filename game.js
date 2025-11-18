@@ -453,11 +453,11 @@ class ChemistryLab {
     }
 
     createExplosion(beaker) {
-        const particleCount = 300; // Increased from 100
+        const particleCount = 600; // MASSIVE explosion - doubled particles!
         const particles = [];
 
         for (let i = 0; i < particleCount; i++) {
-            const geometry = new THREE.SphereGeometry(0.12, 8, 8); // Larger particles for bigger beaker
+            const geometry = new THREE.SphereGeometry(0.18, 8, 8); // Even LARGER particles!
             const material = new THREE.MeshBasicMaterial({
                 color: new THREE.Color(Math.random(), Math.random() * 0.5, Math.random() * 0.5),
                 transparent: true,
@@ -466,18 +466,18 @@ class ChemistryLab {
             const particle = new THREE.Mesh(geometry, material);
 
             particle.position.copy(beaker.position);
-            particle.position.y += 2; // Adjusted for 2x beaker height
+            particle.position.y += 2;
 
             const angle = Math.random() * Math.PI * 2;
             const verticalAngle = (Math.random() - 0.3) * Math.PI / 2;
-            const speed = 0.2 + Math.random() * 0.4; // Doubled speed
+            const speed = 0.4 + Math.random() * 0.8; // MUCH FASTER - tripled speed!
             particle.userData = {
                 velocity: new THREE.Vector3(
                     Math.cos(angle) * Math.cos(verticalAngle) * speed,
-                    Math.sin(verticalAngle) * speed + Math.random() * 0.5,
+                    Math.sin(verticalAngle) * speed + Math.random() * 0.8,
                     Math.sin(angle) * Math.cos(verticalAngle) * speed
                 ),
-                life: 1.5 // Longer life
+                life: 2.0 // Even longer life for dramatic effect
             };
 
             this.scene.add(particle);
@@ -486,16 +486,25 @@ class ChemistryLab {
 
         this.particles.push(...particles);
 
-        // Enhanced shake effect
-        this.shakeBeaker(beaker);
+        // SUPER INTENSE shake effect
+        this.shakeBeaker(beaker, 0.6, 1.5); // Double intensity and duration!
 
-        // Add flash effect
-        const flash = new THREE.PointLight(0xff6600, 8, 15);
+        // ULTRA BRIGHT flash effect - multiple flashes!
+        const flash = new THREE.PointLight(0xff6600, 20, 25); // Much brighter and larger!
         flash.position.copy(beaker.position);
-        flash.position.y += 2.5; // Adjusted for 2x beaker height
+        flash.position.y += 2.5;
         this.scene.add(flash);
 
-        setTimeout(() => this.scene.remove(flash), 300);
+        // Add secondary explosion ring
+        const ring = new THREE.PointLight(0xff0000, 15, 20);
+        ring.position.copy(beaker.position);
+        ring.position.y += 2.5;
+        this.scene.add(ring);
+
+        setTimeout(() => {
+            this.scene.remove(flash);
+            this.scene.remove(ring);
+        }, 500);
     }
 
     createBubbles(beaker) {
@@ -503,37 +512,46 @@ class ChemistryLab {
             type: 'bubbles',
             beaker: beaker,
             time: 0,
-            duration: 5.0, // Longer duration
+            duration: 8.0, // MUCH longer duration for dramatic effect!
             bubbles: [],
-            intensity: 2.0 // More bubbles
+            intensity: 5.0 // TONS of bubbles - 5x intensity!
         };
+
+        // Add bubbling sound effect with light pulses
+        const bubbleLight = new THREE.PointLight(0x00ffff, 3, 8);
+        bubbleLight.position.copy(beaker.position);
+        bubbleLight.position.y += 3;
+        this.scene.add(bubbleLight);
+
+        setTimeout(() => this.scene.remove(bubbleLight), 8000);
 
         this.animations.push(animation);
     }
 
     createFreezeEffect(beaker) {
-        // Enhanced ice crystal effect
+        // SUPER ENHANCED ice crystal effect with TONS of ice!
         const iceGroup = new THREE.Group();
 
-        for (let i = 0; i < 50; i++) { // Increased from 20
-            const size = 0.12 + Math.random() * 0.22; // Larger ice crystals
+        // Create MASSIVE ice crystal formation - 150 crystals!
+        for (let i = 0; i < 150; i++) {
+            const size = 0.15 + Math.random() * 0.35; // MUCH larger ice crystals!
             const geometry = new THREE.OctahedronGeometry(size, 0);
             const material = new THREE.MeshPhysicalMaterial({
                 color: 0xaaffff,
                 transparent: true,
-                opacity: 0.8,
-                roughness: 0.05,
-                metalness: 0.9,
+                opacity: 0.9,
+                roughness: 0.02,
+                metalness: 1.0,
                 clearcoat: 1.0,
-                envMapIntensity: 1.5
+                envMapIntensity: 2.0
             });
             const crystal = new THREE.Mesh(geometry, material);
 
             const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * 0.90; // Larger radius for 2x beaker
+            const radius = Math.random() * 1.1;
             crystal.position.set(
                 Math.cos(angle) * radius,
-                -1.2 + Math.random() * 3.5, // Adjusted for 2x beaker height
+                -1.5 + Math.random() * 4.0,
                 Math.sin(angle) * radius
             );
             crystal.rotation.set(
@@ -548,74 +566,174 @@ class ChemistryLab {
         beaker.add(iceGroup);
         iceGroup.userData.type = 'freeze';
 
-        // Add freeze light effect
-        const freezeLight = new THREE.PointLight(0x00ffff, 5, 8);
-        freezeLight.position.copy(beaker.position);
-        freezeLight.position.y += 2.5; // Adjusted for 2x beaker height
-        this.scene.add(freezeLight);
+        // INTENSE freeze light effect - multiple lights!
+        const freezeLight1 = new THREE.PointLight(0x00ffff, 12, 15); // Much brighter!
+        freezeLight1.position.copy(beaker.position);
+        freezeLight1.position.y += 2.5;
+        this.scene.add(freezeLight1);
 
-        setTimeout(() => this.scene.remove(freezeLight), 1000);
+        const freezeLight2 = new THREE.PointLight(0xaaffff, 8, 12);
+        freezeLight2.position.copy(beaker.position);
+        freezeLight2.position.y += 3.5;
+        this.scene.add(freezeLight2);
 
+        // Add frost particle burst effect
+        for (let i = 0; i < 100; i++) {
+            const frostParticle = new THREE.Mesh(
+                new THREE.SphereGeometry(0.08, 6, 6),
+                new THREE.MeshBasicMaterial({ color: 0xccffff, transparent: true, opacity: 0.8 })
+            );
+            frostParticle.position.copy(beaker.position);
+            frostParticle.position.y += 2;
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 0.15 + Math.random() * 0.25;
+            frostParticle.userData = {
+                velocity: new THREE.Vector3(
+                    Math.cos(angle) * speed,
+                    Math.random() * 0.3,
+                    Math.sin(angle) * speed
+                ),
+                life: 1.5
+            };
+            this.scene.add(frostParticle);
+            this.particles.push(frostParticle);
+        }
+
+        setTimeout(() => {
+            this.scene.remove(freezeLight1);
+            this.scene.remove(freezeLight2);
+        }, 2000);
+
+        this.shakeBeaker(beaker, 0.4, 1.2);
         this.showNotification('❄️ FROZEN SOLID!');
     }
 
     createViscousEffect(beaker) {
         this.showNotification('🍯 GETTING VISCOUS!');
 
-        // Enhanced viscous animation with dripping effect
+        // SUPER ENHANCED viscous animation with DRAMATIC dripping effect!
         const animation = {
             type: 'viscous',
             beaker: beaker,
             time: 0,
-            duration: 3.0,
-            amplitude: 0.15 // More pronounced
+            duration: 5.0, // Much longer duration!
+            amplitude: 0.4 // MUCH more pronounced movement!
         };
         this.animations.push(animation);
+
+        // Add sticky drip particles
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                const drip = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.1, 8, 8),
+                    new THREE.MeshPhysicalMaterial({
+                        color: beaker.userData.liquids[0]?.color || 0xffaa00,
+                        transparent: true,
+                        opacity: 0.7,
+                        roughness: 0.8
+                    })
+                );
+                drip.position.copy(beaker.position);
+                drip.position.y += 1.5;
+                drip.userData = {
+                    velocity: new THREE.Vector3(0, -0.02, 0),
+                    life: 2.0
+                };
+                this.scene.add(drip);
+                this.particles.push(drip);
+            }, i * 100);
+        }
+
+        this.shakeBeaker(beaker, 0.25, 2.0);
     }
 
     createJellyEffect(beaker) {
         this.showNotification('🍮 SOLIDIFYING INTO JELLY!');
 
-        // Enhanced jelly wobble effect
+        // EXTREME jelly wobble effect - SUPER JIGGLY!
         const animation = {
             type: 'jelly',
             beaker: beaker,
             time: 0,
-            duration: 5.0, // Longer wobble
-            amplitude: 0.2 // More wobble
+            duration: 8.0, // MUCH longer wobble!
+            amplitude: 0.5 // EXTREME wobble for maximum jiggle!
         };
         this.animations.push(animation);
+
+        // Add jelly sparkle effect
+        const jellyLight = new THREE.PointLight(0xffaaff, 4, 10);
+        jellyLight.position.copy(beaker.position);
+        jellyLight.position.y += 2;
+        this.scene.add(jellyLight);
+
+        setTimeout(() => this.scene.remove(jellyLight), 8000);
+
+        this.shakeBeaker(beaker, 0.35, 2.0);
     }
 
     createGlowEffect(beaker) {
-        // Enhanced glow effect
-        const glowLight = new THREE.PointLight(0x88ff88, 6, 12); // Brighter and larger for bigger beaker
+        // ULTRA BRIGHT glow effect with INTENSE pulsing!
+        const glowLight = new THREE.PointLight(0x88ff88, 15, 20); // SUPER bright and large!
         glowLight.position.copy(beaker.position);
-        glowLight.position.y += 2.5; // Adjusted for 2x beaker height
+        glowLight.position.y += 2.5;
         this.scene.add(glowLight);
 
+        // Add secondary glow ring
+        const glowRing = new THREE.PointLight(0xaaffaa, 10, 15);
+        glowRing.position.copy(beaker.position);
+        glowRing.position.y += 3.5;
+        this.scene.add(glowRing);
+
+        // Add sparkle particles
+        for (let i = 0; i < 80; i++) {
+            setTimeout(() => {
+                const sparkle = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.06, 6, 6),
+                    new THREE.MeshBasicMaterial({ color: 0xccffcc, transparent: true, opacity: 1.0 })
+                );
+                sparkle.position.copy(beaker.position);
+                sparkle.position.y += 2;
+
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 0.1 + Math.random() * 0.2;
+                sparkle.userData = {
+                    velocity: new THREE.Vector3(
+                        Math.cos(angle) * speed,
+                        0.2 + Math.random() * 0.3,
+                        Math.sin(angle) * speed
+                    ),
+                    life: 2.0
+                };
+                this.scene.add(sparkle);
+                this.particles.push(sparkle);
+            }, i * 80);
+        }
+
         beaker.userData.glowLight = glowLight;
+        beaker.userData.glowRing = glowRing;
 
         const animation = {
             type: 'glow',
             beaker: beaker,
             light: glowLight,
+            ring: glowRing,
             time: 0,
-            duration: 5.0, // Longer glow
-            maxIntensity: 8 // Brighter pulses
+            duration: 8.0, // Much longer glow!
+            maxIntensity: 18 // ULTRA bright pulses!
         };
         this.animations.push(animation);
     }
 
-    shakeBeaker(beaker) {
+    shakeBeaker(beaker, intensity = 0.3, duration = 1.0) {
         const originalPos = beaker.position.clone();
         const animation = {
             type: 'shake',
             beaker: beaker,
             originalPos: originalPos,
             time: 0,
-            duration: 1.0, // Longer shake
-            intensity: 0.3 // More intense
+            duration: duration,
+            intensity: intensity
         };
         this.animations.push(animation);
     }
@@ -643,21 +761,25 @@ class ChemistryLab {
             }
 
             else if (anim.type === 'bubbles') {
-                // Generate more bubbles
+                // Generate TONS of bubbles!
                 const intensity = anim.intensity || 1.0;
-                if (Math.random() < 0.5 * intensity) {
+                if (Math.random() < 0.7 * intensity) { // Higher chance of spawning!
                     const bubble = this.createBubble(anim.beaker);
                     anim.bubbles.push(bubble);
                 }
 
-                // Update bubbles
+                // Update bubbles with FASTER rise and MORE growth!
                 anim.bubbles = anim.bubbles.filter(bubble => {
-                    bubble.position.y += 0.03; // Faster rise
-                    bubble.scale.x += 0.005; // Grow as they rise
-                    bubble.scale.y += 0.005;
-                    bubble.scale.z += 0.005;
-                    bubble.userData.life -= 0.008;
-                    bubble.material.opacity = bubble.userData.life * 0.5;
+                    bubble.position.y += 0.06; // MUCH faster rise - doubled!
+                    bubble.scale.x += 0.012; // Grow MUCH more as they rise!
+                    bubble.scale.y += 0.012;
+                    bubble.scale.z += 0.012;
+                    bubble.userData.life -= 0.006; // Slower fade for longer visibility
+                    bubble.material.opacity = bubble.userData.life * 0.6;
+
+                    // Add wobble to bubbles for more realism
+                    bubble.position.x += Math.sin(anim.time * 10 + bubble.position.y) * 0.02;
+                    bubble.position.z += Math.cos(anim.time * 10 + bubble.position.y) * 0.02;
 
                     if (bubble.userData.life <= 0) {
                         this.scene.remove(bubble);
@@ -712,8 +834,14 @@ class ChemistryLab {
                 const maxIntensity = anim.maxIntensity || 3;
                 anim.light.intensity = maxIntensity + Math.sin(anim.time * 8) * (maxIntensity / 2);
 
+                // Pulse the secondary ring if it exists
+                if (anim.ring) {
+                    anim.ring.intensity = (maxIntensity * 0.6) + Math.sin(anim.time * 10) * (maxIntensity / 3);
+                }
+
                 if (anim.time > anim.duration) {
                     this.scene.remove(anim.light);
+                    if (anim.ring) this.scene.remove(anim.ring);
                     this.animations.splice(i, 1);
                 }
             }
@@ -735,28 +863,29 @@ class ChemistryLab {
     }
 
     createBubble(beaker) {
-        const geometry = new THREE.SphereGeometry(0.12 + Math.random() * 0.18, 16, 16); // Even larger bubbles
+        // HUGE bubbles with lots of variety!
+        const geometry = new THREE.SphereGeometry(0.2 + Math.random() * 0.35, 16, 16); // MUCH bigger bubbles!
         const material = new THREE.MeshPhysicalMaterial({
             color: 0xffffff,
             transparent: true,
-            opacity: 0.4,
+            opacity: 0.5,
             roughness: 0,
             metalness: 0.1,
             clearcoat: 1.0,
-            transmission: 0.9,
-            thickness: 0.5
+            transmission: 0.95,
+            thickness: 0.8
         });
         const bubble = new THREE.Mesh(geometry, material);
 
         const angle = Math.random() * Math.PI * 2;
-        const radius = Math.random() * 0.85; // Larger radius for 2x beaker
+        const radius = Math.random() * 1.0;
         bubble.position.set(
             beaker.position.x + Math.cos(angle) * radius,
-            beaker.position.y - 1.2 + Math.random() * 0.8, // Adjusted for 2x beaker height
+            beaker.position.y - 1.4 + Math.random() * 1.0,
             beaker.position.z + Math.sin(angle) * radius
         );
 
-        bubble.userData.life = 1.2; // Longer life
+        bubble.userData.life = 2.0; // Much longer life for dramatic effect!
 
         this.scene.add(bubble);
         return bubble;
