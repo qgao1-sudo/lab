@@ -131,6 +131,32 @@
             transform: scale(0.95);
         }
 
+        #clear-beakers-btn {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            bottom: 120px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        #clear-beakers-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        #clear-beakers-btn:active {
+            transform: scale(0.95);
+        }
+
         .reaction-notification {
             position: absolute;
             top: 50%;
@@ -161,11 +187,13 @@
     <div id="info">
         <h3>🧪 Chemistry Lab Simulator</h3>
         <p>• Click + to add beakers</p>
+        <p>• Click 🗑️ to clear all beakers</p>
         <p>• Select potion and click beaker to pour</p>
         <p>• Mix liquids to observe reactions</p>
     </div>
 
     <button id="add-beaker-btn" title="Add Beaker">🧪</button>
+    <button id="clear-beakers-btn" title="Clear All Beakers">🗑️</button>
 
     <div id="potion-selector">
         <div class="potion-item" data-potion="red">

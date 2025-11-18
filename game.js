@@ -913,6 +913,28 @@ class ChemistryLab {
                 this.showNotification('⚠️ MAX BEAKERS REACHED!');
             }
         });
+
+        // Clear all beakers button
+        document.getElementById('clear-beakers-btn').addEventListener('click', () => {
+            this.clearAllBeakers();
+        });
+    }
+
+    clearAllBeakers() {
+        if (this.beakers.length === 0) {
+            this.showNotification('⚠️ No beakers to clear!', 1000);
+            return;
+        }
+
+        // Remove all beakers from the scene
+        this.beakers.forEach(beaker => {
+            this.scene.remove(beaker);
+        });
+
+        // Clear the beakers array
+        this.beakers = [];
+
+        this.showNotification('🗑️ All beakers cleared! ✨', 1000);
     }
 
     handleClick(event) {
