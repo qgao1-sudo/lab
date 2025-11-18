@@ -477,7 +477,7 @@ class ChemistryLab {
                     Math.sin(verticalAngle) * speed + Math.random() * 0.8,
                     Math.sin(angle) * Math.cos(verticalAngle) * speed
                 ),
-                life: 2.0 // Even longer life for dramatic effect
+                life: 4.0 // MUCH LONGER life - doubled to 4 seconds!
             };
 
             this.scene.add(particle);
@@ -486,11 +486,11 @@ class ChemistryLab {
 
         this.particles.push(...particles);
 
-        // SUPER INTENSE shake effect
-        this.shakeBeaker(beaker, 0.6, 1.5); // Double intensity and duration!
+        // SUPER INTENSE shake effect - LONGER duration!
+        this.shakeBeaker(beaker, 0.6, 3.0); // Extended to 3 seconds!
 
-        // ULTRA BRIGHT flash effect - multiple flashes!
-        const flash = new THREE.PointLight(0xff6600, 20, 25); // Much brighter and larger!
+        // ULTRA BRIGHT flash effect - multiple flashes LONGER!
+        const flash = new THREE.PointLight(0xff6600, 20, 25);
         flash.position.copy(beaker.position);
         flash.position.y += 2.5;
         this.scene.add(flash);
@@ -504,7 +504,7 @@ class ChemistryLab {
         setTimeout(() => {
             this.scene.remove(flash);
             this.scene.remove(ring);
-        }, 500);
+        }, 1500); // Extended flash duration to 1.5 seconds!
     }
 
     createBubbles(beaker) {
@@ -512,7 +512,7 @@ class ChemistryLab {
             type: 'bubbles',
             beaker: beaker,
             time: 0,
-            duration: 8.0, // MUCH longer duration for dramatic effect!
+            duration: 12.0, // SUPER LONG duration - extended to 12 seconds!
             bubbles: [],
             intensity: 5.0 // TONS of bubbles - 5x intensity!
         };
@@ -523,7 +523,7 @@ class ChemistryLab {
         bubbleLight.position.y += 3;
         this.scene.add(bubbleLight);
 
-        setTimeout(() => this.scene.remove(bubbleLight), 8000);
+        setTimeout(() => this.scene.remove(bubbleLight), 12000); // Extended to 12 seconds!
 
         this.animations.push(animation);
     }
@@ -594,7 +594,7 @@ class ChemistryLab {
                     Math.random() * 0.3,
                     Math.sin(angle) * speed
                 ),
-                life: 1.5
+                life: 3.0 // MUCH LONGER particle life - doubled to 3 seconds!
             };
             this.scene.add(frostParticle);
             this.particles.push(frostParticle);
@@ -603,9 +603,9 @@ class ChemistryLab {
         setTimeout(() => {
             this.scene.remove(freezeLight1);
             this.scene.remove(freezeLight2);
-        }, 2000);
+        }, 4000); // Extended light duration to 4 seconds!
 
-        this.shakeBeaker(beaker, 0.4, 1.2);
+        this.shakeBeaker(beaker, 0.4, 2.5); // Extended shake duration!
         this.showNotification('❄️ FROZEN SOLID!');
     }
 
@@ -617,7 +617,7 @@ class ChemistryLab {
             type: 'viscous',
             beaker: beaker,
             time: 0,
-            duration: 5.0, // Much longer duration!
+            duration: 8.0, // SUPER LONG duration - extended to 8 seconds!
             amplitude: 0.4 // MUCH more pronounced movement!
         };
         this.animations.push(animation);
@@ -638,14 +638,14 @@ class ChemistryLab {
                 drip.position.y += 1.5;
                 drip.userData = {
                     velocity: new THREE.Vector3(0, -0.02, 0),
-                    life: 2.0
+                    life: 4.0 // MUCH LONGER drip life - doubled to 4 seconds!
                 };
                 this.scene.add(drip);
                 this.particles.push(drip);
             }, i * 100);
         }
 
-        this.shakeBeaker(beaker, 0.25, 2.0);
+        this.shakeBeaker(beaker, 0.25, 3.0); // Extended shake duration!
     }
 
     createJellyEffect(beaker) {
@@ -656,7 +656,7 @@ class ChemistryLab {
             type: 'jelly',
             beaker: beaker,
             time: 0,
-            duration: 8.0, // MUCH longer wobble!
+            duration: 12.0, // SUPER LONG wobble - extended to 12 seconds!
             amplitude: 0.5 // EXTREME wobble for maximum jiggle!
         };
         this.animations.push(animation);
@@ -667,9 +667,9 @@ class ChemistryLab {
         jellyLight.position.y += 2;
         this.scene.add(jellyLight);
 
-        setTimeout(() => this.scene.remove(jellyLight), 8000);
+        setTimeout(() => this.scene.remove(jellyLight), 12000); // Extended to 12 seconds!
 
-        this.shakeBeaker(beaker, 0.35, 2.0);
+        this.shakeBeaker(beaker, 0.35, 3.0); // Extended shake duration!
     }
 
     createGlowEffect(beaker) {
@@ -703,7 +703,7 @@ class ChemistryLab {
                         0.2 + Math.random() * 0.3,
                         Math.sin(angle) * speed
                     ),
-                    life: 2.0
+                    life: 4.0 // MUCH LONGER sparkle life - doubled to 4 seconds!
                 };
                 this.scene.add(sparkle);
                 this.particles.push(sparkle);
@@ -719,7 +719,7 @@ class ChemistryLab {
             light: glowLight,
             ring: glowRing,
             time: 0,
-            duration: 8.0, // Much longer glow!
+            duration: 12.0, // SUPER LONG glow - extended to 12 seconds!
             maxIntensity: 18 // ULTRA bright pulses!
         };
         this.animations.push(animation);
