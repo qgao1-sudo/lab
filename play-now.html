@@ -244,6 +244,10 @@ class ChemistryLab {
         this.particles = [];
         this.animations = [];
 
+        // 初始化音效系统
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.masterVolume = 0.3; // 主音量
+
         // Potion Configuration
         this.potionConfig = {
             red: { color: 0xff4444, name: 'Red Potion', viscosity: 1.0 },
@@ -534,6 +538,9 @@ class ChemistryLab {
     }
 
     createPourAnimation(beaker, color, volume) {
+        // 播放倾倒音效
+        this.playPourSound();
+
         const droplets = [];
         const dropletCount = 20;
 
@@ -659,6 +666,9 @@ class ChemistryLab {
     }
 
     createExplosion(beaker) {
+        // 播放爆炸音效
+        this.playExplosionSound();
+
         const particleCount = 600; // MASSIVE explosion - doubled particles!
         const particles = [];
 
@@ -714,6 +724,9 @@ class ChemistryLab {
     }
 
     createBubbles(beaker) {
+        // 播放气泡音效
+        this.playBubbleSound();
+
         const animation = {
             type: 'bubbles',
             beaker: beaker,
@@ -735,6 +748,9 @@ class ChemistryLab {
     }
 
     createFreezeEffect(beaker) {
+        // 播放冰冻音效
+        this.playFreezeSound();
+
         // SUPER ENHANCED ice crystal effect with TONS of ice!
         const iceGroup = new THREE.Group();
 
@@ -816,6 +832,9 @@ class ChemistryLab {
     }
 
     createViscousEffect(beaker) {
+        // 播放粘稠音效
+        this.playViscousSound();
+
         this.showNotification('🍯 GETTING VISCOUS!');
 
         // SUPER ENHANCED viscous animation with DRAMATIC dripping effect!
@@ -855,6 +874,9 @@ class ChemistryLab {
     }
 
     createJellyEffect(beaker) {
+        // 播放果冻音效
+        this.playJellySound();
+
         this.showNotification('🍮 SOLIDIFYING INTO JELLY!');
 
         // EXTREME jelly wobble effect - SUPER JIGGLY!
@@ -879,6 +901,9 @@ class ChemistryLab {
     }
 
     createGlowEffect(beaker) {
+        // 播放发光音效
+        this.playGlowSound();
+
         // ULTRA BRIGHT glow effect with INTENSE pulsing!
         const glowLight = new THREE.PointLight(0x88ff88, 15, 20); // SUPER bright and large!
         glowLight.position.copy(beaker.position);
@@ -1167,6 +1192,191 @@ class ChemistryLab {
         this.beakers = [];
 
         this.showNotification('🗑️ All beakers cleared! ✨', 1000);
+    }
+
+    // 音效生成方法
+    playExplosionSound() {
+        const now = this.audioContext.currentTime;
+
+        // 爆炸低频轰鸣
+        const osc1 = this.audioContext.createOscillator();
+        const gain1 = this.audioContext.createGain();
+        osc1.connect(gain1);
+        gain1.connect(this.audioContext.destination);
+
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(80, now);
+        osc1.frequency.exponentialRampToValueAtTime(20, now + 0.5);
+
+        gain1.gain.setValueAtTime(this.masterVolume * 0.8, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+
+        osc1.start(now);
+        osc1.stop(now + 0.8);
+
+        // 爆炸噪音
+        const bufferSize = this.audioContext.sampleRate * 0.5;
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / bufferSize * 10);
+        }
+
+        const noise = this.audioContext.createBufferSource();
+        const noiseGain = this.audioContext.createGain();
+        noise.buffer = buffer;
+        noise.connect(noiseGain);
+        noiseGain.connect(this.audioContext.destination);
+
+        noiseGain.gain.setValueAtTime(this.masterVolume * 0.4, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+        noise.start(now);
+    }
+
+    playBubbleSound() {
+        const now = this.audioContext.currentTime;
+
+        // 气泡声音 - 高频咕嘟声
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const osc = this.audioContext.createOscillator();
+                const gain = this.audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(this.audioContext.destination);
+
+                const freq = 400 + Math.random() * 400;
+                osc.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(freq * 0.5, this.audioContext.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(this.masterVolume * 0.3, this.audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.15);
+
+                osc.start();
+                osc.stop(this.audioContext.currentTime + 0.15);
+            }, i * 100);
+        }
+    }
+
+    playFreezeSound() {
+        const now = this.audioContext.currentTime;
+
+        // 冰冻声音 - 清脆的高频音
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(2000, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.6);
+
+        gain.gain.setValueAtTime(this.masterVolume * 0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+        osc.start(now);
+        osc.stop(now + 0.6);
+    }
+
+    playViscousSound() {
+        const now = this.audioContext.currentTime;
+
+        // 粘稠声音 - 低沉的滑动声
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.5);
+
+        gain.gain.setValueAtTime(this.masterVolume * 0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+
+        osc.start(now);
+        osc.stop(now + 0.5);
+    }
+
+    playJellySound() {
+        const now = this.audioContext.currentTime;
+
+        // 果冻声音 - 弹性wobble声
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        const lfo = this.audioContext.createOscillator();
+        const lfoGain = this.audioContext.createGain();
+
+        lfo.frequency.setValueAtTime(8, now);
+        lfoGain.gain.setValueAtTime(50, now);
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(200, now);
+
+        gain.gain.setValueAtTime(this.masterVolume * 0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+
+        lfo.start(now);
+        osc.start(now);
+        lfo.stop(now + 0.8);
+        osc.stop(now + 0.8);
+    }
+
+    playGlowSound() {
+        const now = this.audioContext.currentTime;
+
+        // 发光声音 - 魔法闪光声
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.audioContext.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(1600, now + 0.3);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.6);
+
+        gain.gain.setValueAtTime(this.masterVolume * 0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+        osc.start(now);
+        osc.stop(now + 0.6);
+    }
+
+    playPourSound() {
+        const now = this.audioContext.currentTime;
+
+        // 倾倒声音 - 液体流动声
+        const bufferSize = this.audioContext.sampleRate * 0.3;
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * 0.3 * Math.sin(i / 100);
+        }
+
+        const noise = this.audioContext.createBufferSource();
+        const noiseGain = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+
+        noise.buffer = buffer;
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(this.audioContext.destination);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, now);
+
+        noiseGain.gain.setValueAtTime(this.masterVolume * 0.2, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+        noise.start(now);
     }
 
     handleClick(event) {
