@@ -923,6 +923,11 @@ class ChemistryLab {
         // 药水选择
         document.querySelectorAll('.potion-item').forEach(item => {
             item.addEventListener('click', () => {
+                // 恢复音频上下文
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+
                 document.querySelectorAll('.potion-item').forEach(i => i.classList.remove('selected'));
                 item.classList.add('selected');
                 this.selectedPotion = item.dataset.potion;
@@ -931,6 +936,11 @@ class ChemistryLab {
 
         // Add beaker button
         document.getElementById('add-beaker-btn').addEventListener('click', () => {
+            // 恢复音频上下文
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume();
+            }
+
             if (this.beakers.length < 6) {
                 this.addBeaker();
                 this.showNotification('🧪 New Beaker Added! ✨', 1000);
@@ -941,6 +951,11 @@ class ChemistryLab {
 
         // Clear all beakers button
         document.getElementById('clear-beakers-btn').addEventListener('click', () => {
+            // 恢复音频上下文
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume();
+            }
+
             this.clearAllBeakers();
         });
     }
@@ -1148,6 +1163,11 @@ class ChemistryLab {
     }
 
     handleClick(event) {
+        // 恢复音频上下文（处理浏览器自动播放限制）
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+
         this.raycaster.setFromCamera(this.mouse, this.camera);
 
         // 检测烧杯点击
